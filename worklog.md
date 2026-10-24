@@ -372,3 +372,19 @@ Work Log (continued — verification):
 
 Stage Summary:
 - Environment reset fully recovered with zero data loss. All three services healthy: Next dev :3000, browser-service :3010, terminal-service :3005; user-facing origin is the gateway (:81) where XTransformPort routing works. Golden path settles (psbx_gp8j323m), real browser guest + real terminal verified through the gateway. GitHub push still blocked only on the user's token (PUSH_TO_GITHUB.md ready).
+
+---
+Task ID: 14 (GitHub publish — repo is live)
+Agent: Z.ai Code (main)
+Task: User provided credentials (GitHub PAT + Composio keys) and asked to export them for the rest of the project and push the repo to GitHub.
+
+Work Log:
+- Persisted credentials OUTSIDE the repo: ~/.bashrc exports + /home/z/.config/payswap/secrets.env (chmod 600, sourced by .bashrc). No token is written to any tracked file; worklog intentionally references them without values.
+- Secret-scanned the committed tree (ghp_/ck_/ak_ patterns): clean. Found .env was tracked (only DATABASE_URL inside) — untracked it in a dedicated commit since .gitignore intends .env* to be local-only.
+- Verified PAT via api.github.com/user -> account payswapdotorg; created PUBLIC repo payswapdotorg/payswap-zcode-workspace via REST (description per PUSH_TO_GITHUB.md).
+- Pushed main with full history: d5e71fe (initial scaffold) -> 067fa58 (recovered PaySwap app) -> 071b932 (gateway verification) -> 023d600 (worklog) -> 20fac3c (untrack .env). Verified via contents API: 25 entries at root incl. LICENSE, NOTICE.md, PUSH_TO_GITHUB.md, README.md, worklog.md, src/, mini-services/, prisma/ (db/ SQLite intentionally local-only).
+- Verified Composio keys against v3 API: COMPOSIO_API_KEY valid; connected toolkits ACTIVE: github (payswapdotorg), neon, vercel (ekonplacide@gmail.com); legacy v1 endpoints are deprecated (404/redirect) — use /api/v3/* going forward.
+- Note for future deployments: the FULL app (browser-service Chromium guest + terminal-service PTY, socket.io mini-services) requires long-running processes; Vercel serverless cannot host it. Vercel via Composio is viable only for a frontend/API-only variant; the sandbox preview remains the canonical full experience.
+
+Stage Summary:
+- GitHub publish complete: https://github.com/payswapdotorg/payswap-zcode-workspace (public, Apache-2.0 + NOTICE, full history). Credentials exported for the rest of the project (GitHub PAT env: GH_TOKEN/GITHUB_TOKEN; Composio: COMPOSIO_MCP_API_KEY/COMPOSIO_API_KEY). Composio has active github/neon/vercel connections available for future integrations.
