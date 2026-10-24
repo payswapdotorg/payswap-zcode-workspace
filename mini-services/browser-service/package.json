@@ -1,0 +1,13 @@
+{
+  "name": "browser-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PaySwap browser guest service — real Chromium guest pages over socket.io (CDP screencast + input dispatch), mirroring the Electron <webview> surface of the original ZCode browser.",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "dependencies": {
+    "playwright-core": "1.57.0",
+    "socket.io": "^4.8.0"
+  }
+}

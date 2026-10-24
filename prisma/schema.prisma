@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A task thread. Tasks are the unit of agent work (ZCode session analogue).
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  projectId   String?
+  status      String    @default("running") // running | completed | failed
+  goal        String? // structured economic goal summary (capability 1)
+  routineJson String? // RoutineRunState JSON — routine loaded by the agent
+  gatesJson   String? // PaymentGate[] JSON — checkout gates opened during the run
+  originJson  String? // TaskOrigin JSON — browser origin (store url/item/price)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  messages    Message[]
+}
+
+/// One chat message. Agent messages carry ordered tool steps as JSON.
+model Message {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  role      String // user | agent
+  content   String   @default("")
+  steps     String   @default("[]") // JSON AgentStep[]
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+}
+
+/// Human approval for consequential effects (Trust Boundary / capability 15+22).
+model Approval {
+  id          String    @id @default(cuid())
+  taskId      String
+  stepId      String?
+  summary     String
+  payloadJson String // amount, currency, rail, beneficiary, mode, evidence
+  status      String    @default("pending") // pending | approved | denied | expired
+  createdAt   DateTime  @default(now())
+  decidedAt   DateTime?
+}
+
+/// Financial protocol records (capability 12+14): obligations, legs, finality.
+model LedgerEntry {
+  id           String   @id @default(cuid())
+  taskId       String?
+  approvalId   String?
+  kind         String // obligation | funding | conversion | payout | settlement | fee
+  amount       Float
+  currency     String
+  rail         String
+  status       String // proposed | submitted | processing | settled | unknown
+  ref          String // external/provider reference
+  evidenceJson String?
+  createdAt    DateTime @default(now())
+
+  @@index([taskId])
+}
+
+/// Key/value app settings (persisted workspace + PaySwap policy settings).
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// A routine (playbook) the agent loads to fulfill an economic intent.
+/// Published by PaySwap Core or third parties; gated by acceptance review.
+model Routine {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  publisher    String   @default("You")
+  version      String   @default("0.1.0")
+  description  String   @default("")
+  category     String // RoutineCategory
+  merchant     Boolean  @default(false)
+  stepsJson    String   @default("[]") // RoutineStep[] JSON
+  userScore    Float    @default(0)
+  userCount    Int      @default(0)
+  agentScore   Float    @default(0)
+  agentCount   Int      @default(0)
+  installs     Int      @default(0)
+  status       String   @default("pending_review") // accepted | pending_review | rejected
+  installed    Boolean  @default(false)
+  builtin      Boolean  @default(false)
+  keywordsJson String   @default("[]") // string[] JSON
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// An economic intent broadcast to PaySwap nodes for bidding.
+model Opportunity {
+  id                 String           @id @default(cuid())
+  title              String
+  kind               String // routing | liquidity | fx | payout
+  intentSummary      String
+  amount             Float
+  currency           String
+  rewardBps          Int
+  createdByTaskId    String?
+  createdByTaskTitle String?
+  status             String           @default("open") // open | awarded
+  awardedNodeId      String?
+  expiresAt          DateTime
+  createdAt          DateTime         @default(now())
+  bids               OpportunityBid[]
+
+  @@index([status])
+}
+
+/// A node's bid on an opportunity.
+model OpportunityBid {
+  id            String      @id @default(cuid())
+  opportunityId String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  node          String
+  region        String
+  feeBps        Int
+  etaMinutes    Int
+  nodeRating    Float
+  createdAt     DateTime    @default(now())
+
+  @@index([opportunityId])
+}
