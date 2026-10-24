@@ -1,0 +1,640 @@
+# Everything PaySwap should let you do, according to the frozen architecture
+
+The frozen PaySwap 3.0 architecture defines PaySwap as a universal economic operating system: humans, agents, merchants, developers and external applications should be able to accomplish economic goals across fiat, blockchain and future financial rails through one capability fabric and one deterministic financial protocol.
+
+That is a much bigger product than a wallet, a payment app, a PSP aggregator or an AI chatbot. Those are individual ways to interact with the system, not the system itself.
+
+The inventory below is derived from the [PaySwap 3.0 Architecture Lock](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/PAYSWAP-3.0.md?utm_source=chatgpt.com), supplemented by its [Economic Model](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/economic/ECONOMIC-MODEL.md?utm_source=chatgpt.com), [Financial Protocol](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/protocol/FINANCIAL-PROTOCOL.md?utm_source=chatgpt.com), [Capability Fabric](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/capability/CAPABILITY-FABRIC.md?utm_source=chatgpt.com), [Trust Boundary](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/trust/TRUST-BOUNDARY.md?utm_source=chatgpt.com) and [Reality Engineering Lab](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/lab/LAB.md?utm_source=chatgpt.com).
+
+Important: this is the product's intended capability inventory, not a claim that every capability is currently available in the installed desktop app. I distinguish those implementation gaps at the end.
+
+# Part I — What a person or business should be able to do
+
+## 1. Express any economic goal
+
+The user should be able to begin with the outcome they want rather than having to understand payment rails, provider APIs and settlement mechanics.
+
+Examples:
+
+- “Send 500 GHS to this supplier before Friday.”
+- “Pay this invoice using the cheapest eligible method.”
+- “Receive USD from this customer and settle in GHS.”
+- “Move funds from my bank account to a recipient's mobile-money account.”
+- “Convert this asset into the currency I need.”
+- “Pay my employees in three countries.”
+- “Collect payment from customers on my website.”
+- “Pay this supplier using crypto if it is cheaper and compliant.”
+- “Make this payment every month for the next six months.”
+- “Find a way to complete this economic goal without exceeding my cost limit.”
+- “Arrange access to a service within a specified budget.”
+- “Identify an opportunity that helps my business earn or save money.”
+
+The system should turn a user's request into a structured Economic Goal, then compile its individual demands into typed intents. The architecture includes money movement, payment and service-access intents, and bounded recurring or parameterized economic programs.
+
+The user should be able to specify:
+
+- The intended outcome and the party requesting it.
+- The amount, currency, origin and destination.
+- The permitted types of economic activity.
+- Deadlines, maximum settlement time and route-hop constraints.
+- Cost and other economic restrictions.
+- Whether reversibility or recourse is required.
+- What proof is required, such as settlement finality, delivery confirmation or a receipt.
+- Explicit non-goals—things the system must not do while trying to achieve the objective.
+- Versioned inputs such as a quote, FX rate, market-data observation or corridor definition.
+
+A goal may include multiple ordered outcomes, such as paying a supplier, receiving confirmation of delivery and then issuing a second payment. The order is meaningful, not just a list of unrelated transactions.
+
+Recurring programs are also part of the model. The current economic contract defines bounded recurrence—up to 64 occurrences—with fixed interval semantics; it does not specify every possible calendar scheduling rule.
+
+Source: [Economic Model Contract](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/economic/ECONOMIC-MODEL.md?utm_source=chatgpt.com).
+
+## 2. Pay, send and transfer money
+
+A user should be able to initiate money movement from one external funds location to another without needing to manually choose a PSP or chain first.
+
+That includes:
+
+- Person-to-person transfers.
+- Business-to-business payments.
+- Supplier and contractor payments.
+- Payroll and other batches of outgoing payments.
+- Transfers between a user's own external accounts.
+- Domestic and international remittances.
+- Payouts to external settlement destinations.
+- Payment of invoices and other commerce obligations.
+- Payments whose funding and arrival currencies differ.
+- Multi-step payments that depend on an earlier economic outcome.
+- Transfers constrained by a deadline, cost cap, permitted route or required proof.
+
+PaySwap should determine which routes are eligible, explain what each route requires, and use the Financial Protocol to govern consequential effects.
+
+The user should not have to understand whether the selected route ultimately uses a bank, card, mobile-money provider, PSP or blockchain.
+
+## 3. Receive money and collect payments
+
+The architecture should support the other side of economic activity—not just sending money.
+
+A user or business should be able to:
+
+- Request payment from a person or business.
+- Initiate a collection flow for an existing obligation.
+- Receive funds through an eligible provider or rail.
+- Define the desired arrival currency and destination.
+- Collect payment for a service or commerce transaction.
+- Track whether the payer needs to act.
+- Distinguish a request, provider acknowledgement and actual settlement.
+- Reconcile incoming payments with their originating obligations.
+- Access the associated evidence and receipts when authoritative records exist.
+
+The payer and recipient sides must not be conflated. A provider saying that a payout was sent does not, by itself, prove that the beneficiary's account was credited.
+
+## 4. Convert currencies and assets
+
+PaySwap should make conversion part of the overall economic task instead of maintaining an isolated exchange engine for every rail.
+
+A user should be able to:
+
+- Specify the currency or asset they have and the currency or asset they need.
+- Compare eligible conversion routes.
+- Compare quoted rates, fees, spreads and settlement terms.
+- See whether a quote is indicative or guaranteed.
+- See the quote source, version, timestamp and expiry.
+- Choose a route based on cost, speed, risk, recipient constraints and policy.
+- Include conversion as an intermediate step in a larger payment.
+- Receive the intended destination currency where the selected route supports it.
+- Track the conversion leg separately from funding and payout.
+- Reconcile the conversion using provider or market evidence.
+
+For example, PaySwap should be able to reason about a bank-to-FX-to-PSP-to-recipient route and a crypto-to-DEX-to-stablecoin-to-off-ramp-to-bank route under the same economic model.
+
+Architecture boundary: the frozen architecture defines this intended capability, but the current Financial Protocol v1 explicitly defers the full FX kernel and value-conversion graph. The entire live conversion experience therefore cannot be inferred from the existence of the architecture or its contracts.
+
+Source: [Economic Execution Graph](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/ECONOMIC-EXECUTION-GRAPH.md?utm_source=chatgpt.com) and [Financial Protocol limitations](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/protocol/FINANCIAL-PROTOCOL.md?utm_source=chatgpt.com).
+
+## 5. Choose the best eligible route
+
+This is one of the central differentiators of PaySwap.
+
+Given an economic goal, the system should be able to discover and evaluate multiple ways to achieve it.
+
+That means:
+
+- Compare provider-native execution against routes composed by PaySwap.
+- Compare routes using several providers.
+- Evaluate different combinations of funding, conversion, settlement and payout.
+- Exclude routes that violate geographic, currency, customer-type or transaction restrictions.
+- Consider fees, exchange-rate spread, timing, provider quota and available capability observations.
+- Consider required information, operating cutoffs and delivery terms.
+- Show why a route was rejected, not merely hide it.
+- Respect maximum route hops and settlement deadlines.
+- Re-evaluate eligibility when a material input changes.
+- Recalculate authorization when the destination, amount, asset, route or risk changes.
+
+The architecture defines three explicit execution modes:
+
+| Mode                       | Intended meaning                                                   |
+| -------------------------- | ------------------------------------------------------------------ |
+| `PASS_THROUGH_NATIVE`      | Use a provider's native capability as offered.                     |
+| `COMPOSED_PAYSWAP`         | Compose capabilities under PaySwap's economic and financial rules. |
+| `OPTIMIZED_MULTI_PROVIDER` | Coordinate multiple eligible providers to achieve the goal.        |
+
+PaySwap must not assume that its own composed route is automatically superior. Provider-native execution remains a candidate baseline.
+
+Source: [Capability Fabric](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/capability/CAPABILITY-FABRIC.md?utm_source=chatgpt.com).
+
+## 6. Coordinate multi-step and cross-rail transactions
+
+PaySwap should support financial plans that cross providers, asset types and settlement rails.
+
+The frozen architecture explicitly describes routes such as:
+
+Bank → FX → PSP → recipient
+
+Move from a bank-held currency through a conversion and payment provider to the intended recipient.
+
+Fiat PSP → stablecoin → blockchain → recipient
+
+Compose a fiat funding step, an asset conversion or issuance step, blockchain transfer and destination delivery.
+
+Chain A → bridge → Chain B
+
+Coordinate cross-chain movement while preserving bridge risk, custody model, confirmations and finality evidence.
+
+Eligible crypto → exchange or DEX capability → off-ramp → bank
+
+Use a multi-stage route to turn a supported digital asset into funds delivered through a supported external banking rail.
+
+Multiple suppliers, providers or settlement destinations
+
+Compile related tasks into a graph, preserve the relationship between the steps, and track partial completion, dependencies, authorization and recourse.
+
+Each plan belongs to one typed, versioned Economic Execution Graph (EEG). It retains intent lineage, capability references, authority lineage, policy/security decisions, observation freshness, idempotency boundaries, evidence, finality and compensation/recourse semantics.
+
+The user experience should make this visible enough to understand a proposed route, while hiding implementation complexity until it matters.
+
+These are architecture-supported route patterns—not claims that every listed route is currently connected to a live provider.
+
+Source: [Economic Execution Graph](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/ECONOMIC-EXECUTION-GRAPH.md?utm_source=chatgpt.com).
+
+# Part II — What merchants and service providers should be able to do
+
+## 7. Accept payments and run merchant checkout
+
+Merchants should be able to use PaySwap to accept payments and fulfill commercial obligations.
+
+The intended capabilities include:
+
+- Configure a merchant's supported payment acceptance capabilities.
+- Connect the merchant to eligible external payment providers.
+- Define commerce-related payment intents and preserve commerce lineage.
+- Offer supported payment methods through actual provider capabilities.
+- Create hosted checkout experiences where supported.
+- Integrate payment acceptance into a store or other external application.
+- Track the payment's lifecycle and whether customer action is required.
+- Reconcile accepted payments and settlement.
+- Preserve provider-specific states needed for support and audit.
+- Handle supported capture, refund, dispute, chargeback and payout lifecycle states.
+- Keep payment acceptance distinct from the mechanisms used to fund or settle it.
+
+The capability model explicitly includes merchant acceptance, but it also makes an important distinction: advertising a merchant-acceptance capability is not the same as having an executable connected capability.
+
+The complete hosted merchant checkout UI/context plane is still a known implementation gap in the current feature map.
+
+Source: [Capability Model](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/CAPABILITY-MODEL.md?utm_source=chatgpt.com) and [Feature Map](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/productization/FEATURE-MAP.md?utm_source=chatgpt.com).
+
+## 8. Connect PSPs and other service providers
+
+A provider should be integrated through a common capability model, rather than by building a new payment engine around each brand.
+
+The intended provider families include:
+
+- Banks.
+- Payment service providers.
+- Cards and card-related payment services.
+- Mobile-money providers.
+- FX providers.
+- Credit and liquidity providers.
+- Blockchain networks and wallets.
+- DEXs and aggregators.
+- Bridges and off-ramps.
+- Smart-contract protocols.
+- Data providers.
+- Experts, agents and other future services.
+
+For each provider, PaySwap should support the relevant subset of:
+
+1. Discover its declared capabilities.
+2. Show prerequisites and supported integration types.
+3. Establish a connection by the appropriate method.
+4. Store credentials securely outside model context.
+5. Determine which permissions and scopes have been granted.
+6. Verify the actual account or connection through provider evidence.
+7. Observe health, availability, quotas, terms and state.
+8. Determine eligibility for a particular task or corridor.
+9. Execute only capabilities that are properly connected, scoped, eligible and authorized.
+10. Track provider-specific state, external references and revisions.
+11. Reconcile asynchronous or ambiguous outcomes.
+12. Handle the supported disconnect, expiration, revocation and recovery lifecycle.
+13. Keep sandbox/test and live environments distinct.
+
+Connection methods may include delegated OAuth, connected accounts, scoped API credentials, isolated interactive browser sessions and providerless rails where applicable. Not every provider supports every method.
+
+For Stripe in particular, the architecture differentiates own-store payment acceptance, existing-account grants and marketplace/connected-account onboarding. Those are different experiences, not one generic “connect Stripe” button.
+
+## 9. Let businesses add PaySwap to their own systems
+
+PaySwap should not require users to operate exclusively inside the desktop or web application.
+
+The architecture calls for framework-independent Surface contracts that can be consumed by other products and services. That enables intended integrations such as:
+
+- Adding PaySwap payment functionality to a store.
+- Consuming supported PaySwap API/SDK contracts.
+- Embedding supported hosted checkout.
+- Connecting an external app to the same financial protocol.
+- Letting an external agent request an economic task through an authorized interface.
+- Receiving status and evidence in a way that is consistent with the canonical protocol.
+- Using the same rules for authorization, idempotency and reconciliation across clients.
+
+These capabilities require real API/runtime configuration, supported SDK/API endpoints and the corresponding connected services. The existence of the architecture's Surface API is not proof that a production API host or every consumer integration is available.
+
+Source: [Architecture Lock](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/PAYSWAP-3.0.md?utm_source=chatgpt.com).
+
+# Part III — What PaySwap should let users do with blockchain
+
+## 10. Connect and observe blockchain accounts
+
+The intended blockchain experience should let a user interact with chains as one family of settlement rails.
+
+The user should eventually be able to:
+
+- Choose a supported chain and environment.
+- Connect an eligible wallet or smart-account mechanism.
+- View externally observed addresses, assets and balances.
+- Understand the source and freshness of each observation.
+- See supported token/asset information.
+- Understand network mismatches and account permissions.
+- Inspect which signing or smart-account capabilities are available.
+- Distinguish a connected wallet from permission to sign or execute.
+
+PaySwap is non-custodial by architectural design. It should not need to possess the user's root credentials to coordinate a supported transaction.
+
+## 11. Prepare, authorize and track onchain transactions
+
+For supported onchain writes, the frozen architecture specifies a disciplined transaction pipeline:
+
+1. Prepare a typed write intent.
+2. Simulate the proposed change where supported.
+3. Run policy and security checks.
+4. Present a human-readable expected-state difference.
+5. Obtain the required scoped authorization.
+6. Re-check important assumptions immediately before execution.
+7. Execute through the authorized signer/rail.
+8. Observe the external transaction.
+9. Establish finality according to the rail's semantics.
+10. Reconcile the result and preserve evidence.
+
+The UI should support the relevant experiences for:
+
+- Transfers.
+- Token or contract approvals.
+- Contract calls.
+- Swaps.
+- Bridge transactions.
+- Onchain economic intents.
+- Simulation and security findings.
+- Pending transactions and confirmations.
+- Failed transactions.
+- Unknown outcomes.
+- Reorganizations and changes in finality.
+- Transaction history and evidence.
+
+The security model needs to address malicious or unexpected approvals, fake tokens, proxy/admin upgrades, oracle manipulation, bridge compromise, MEV/sandwich risk, replay/signature-domain issues, unexpected state changes and stale simulation results.
+
+The architecture defines the operation and security contracts, but the current feature map says that wallet connection, live RPC/network context, signing and the full onchain execution UX remain unwired. The onchain capability vocabulary is not a substitute for a connected wallet or executable chain integration.
+
+Sources: [Invariants](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/INVARIANTS.md?utm_source=chatgpt.com) · [Security Model](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/SECURITY-MODEL.md?utm_source=chatgpt.com).
+
+# Part IV — The financial operating system behind all these tasks
+
+## 12. Maintain one coherent financial protocol
+
+Users should not experience one ledger for bank transfers, a different financial truth for blockchain payments and yet another for agent actions.
+
+PaySwap's Financial Protocol Authority owns a canonical lifecycle that includes:
+
+1. Economic activity.
+2. Fulfillment activity.
+3. Clearing records.
+4. Obligations.
+5. Netting sets.
+6. Net positions.
+7. Settlement instructions.
+8. Settlement attempts.
+9. External rail operations.
+10. Finality records.
+
+The intended behavior includes:
+
+- Derive obligations deterministically from recorded economic activity.
+- Group relevant activities into clearing records.
+- Calculate supported net positions.
+- Create settlement instructions from protocol-derived records.
+- Track each settlement attempt through its lifecycle.
+- Prevent duplicate state-changing operations with idempotency.
+- Record external observations separately from PaySwap's own effects.
+- Decide financial finality through the protocol, not the UI or provider catalogue.
+- Maintain an evidence trail for every consequential effect.
+- Reconcile ambiguous or late events without rewriting history.
+- Support declared reversal/compensation rules where the protocol allows them.
+
+Finality matters: submitting a transaction, receiving a provider acknowledgement and proving a completed economic obligation are different things.
+
+The current protocol implementation has documented boundaries. In particular, mixed-currency netting is deferred, and the v1 protocol's reference stores are in-memory rather than production persistence adapters.
+
+Source: [Financial Protocol](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/protocol/FINANCIAL-PROTOCOL.md?utm_source=chatgpt.com).
+
+## 13. Support reservations, liquidity, credit and deferred settlement
+
+At the architectural level, PaySwap is designed to reason about economic obligations and the ability to fulfill them—not simply submit immediate transfers.
+
+The frozen design and capability fabric encompass funding-source classes including liquidity, credit and lending, and the protocol includes reservations, obligations and settlement.
+
+The broader intended product can therefore represent and coordinate:
+
+- Reserves and reservation availability.
+- Liquidity and positions.
+- Credit lines and per-draw credit exposure.
+- Credit or funding prerequisites for a route.
+- Settlement deferral where permitted.
+- Collateral-related constraints.
+- Partial execution and recourse requirements.
+- Separate funding, conversion and payout legs.
+- The evidence necessary to prove each leg.
+
+For example, a plan might need to determine whether a supported source can provide funds, whether an obligation can be deferred under the applicable rules, and how the eventual payout must settle.
+
+These are part of the wider architectural direction, but the current Financial Protocol v1 explicitly defers the full FX, liquidity, credit and collateral kernels. The architecture should not be read as evidence that users can already draw credit, obtain liquidity or settle arbitrary mixed-currency obligations through the installed application.
+
+## 14. Inspect activity, evidence, receipts and reconciliation
+
+Every real economic operation should create a traceable history that the user can inspect.
+
+The intended UX includes:
+
+- A record of the requested goal and its resulting intents.
+- The selected execution graph and capability references.
+- The authorization and policy/security decisions.
+- External operation identifiers and provider revisions.
+- Funding, conversion and payout records.
+- External observations.
+- Finality evidence.
+- Reconciliation events and any unresolved ambiguity.
+- Recourse, reversal or compensation references when relevant.
+- Evidence showing which requirements were satisfied.
+
+The history must retain material facts, even when the current state changes. Late provider events must not silently overwrite the past.
+
+When the outcome is ambiguous, users should see UNKNOWN / needs reconciliation, not a fabricated success or automatic failure. PaySwap must not blindly retry a potentially effective payment.
+
+A separate fully realized receipts/reporting UX remains something the UI inventory must verify; the fact that the financial protocol supports evidence lineage does not mean every evidence record is surfaced to users today.
+
+# Part V — Delegation, automation and agents
+
+## 15. Let users give agents bounded economic responsibilities
+
+PaySwap should allow agents to contribute to achieving economic goals, while keeping the financial authorities outside the agent itself.
+
+The architecture distinguishes three concepts:
+
+- Agent Body: the stable identity of a capability.
+- Agent Instance: the body combined with a model or algorithm and runtime.
+- Agent Package: a bundle of bodies, extensions, required capabilities, evaluation and provenance.
+
+A user should eventually be able to:
+
+- Select or configure an appropriate agent/model/runtime.
+- Assign an economic goal.
+- Specify the actions and resources the agent may access.
+- Restrict amounts, currencies, rails, countries and beneficiaries.
+- Set transaction and velocity limits.
+- Set maximum cost or FX spread.
+- Set time bounds and expiry.
+- Require approval or particular proof for sensitive actions.
+- Allow escalation to a human when the agent's authority is insufficient.
+- Revoke delegated authority.
+- See why an action was allowed or blocked.
+- Audit which principal, mandate and approval governed an action.
+
+Agents can propose plans, discover opportunities and request authorized execution. They cannot grant themselves financial authority or override a policy/security block.
+
+The same rules apply whether the request originated in chat, a workflow, a plugin, MCP, browser automation or another client.
+
+Source: [Trust Boundary](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/trust/TRUST-BOUNDARY.md?utm_source=chatgpt.com).
+
+## 16. Delegate and automate recurring economic tasks
+
+The economic program model provides the basis for bounded parameterized and recurring goals.
+
+The intended experience includes:
+
+- Capture a reusable goal template.
+- Set bounded recurrence and occurrence parameters.
+- Expand that program deterministically into individual goals.
+- Re-validate each generated goal.
+- Carry the applicable constraints and non-goals forward.
+- Preserve a record of each occurrence.
+- Re-evaluate current capability, eligibility and authorization before execution.
+- Require a new approval if the original authorization no longer covers the proposed action.
+
+The frozen v1 model uses a bounded fixed-interval recurrence rule. It does not promise arbitrary natural-language calendar scheduling without additional design and implementation.
+
+## 17. Use the ZCode platform to build and operate agents
+
+PaySwap is designed to compose with the ZCode substrate instead of reproducing its development environment as a second application.
+
+That means the overall product can use platform capabilities for:
+
+- Model/provider selection.
+- Workspace and task sessions.
+- Agent workflows and subagents.
+- Terminal and command execution.
+- Browser control.
+- Tools and MCP.
+- Plugins, extensions and skills.
+- Artifacts and files.
+- Telemetry and task history.
+- Application permissions and runtime controls.
+
+The division is intentional. ZCode supplies platform authority such as session/runtime execution and model/tool selection. PaySwap supplies financial authority such as policy, authorization and financial state.
+
+The two cooperate without merging their powers.
+
+# Part VI — Intelligence, opportunities and the Lab
+
+## 18. Discover financial opportunities
+
+PaySwap's intelligence layer is intended to do more than execute instructions. It should be able to discover candidate opportunities and propose ways to improve economic outcomes.
+
+Examples of the types of questions the architecture is designed to investigate:
+
+- Is there a cheaper eligible route for this payment?
+- Can supported providers be composed to fulfill an economic goal?
+- Could changing timing improve cost or availability?
+- Is there an opportunity to serve a merchant or customer through an available capability?
+- Which strategy or organization is better suited to the goal?
+- Which constraints, risks or missing capabilities prevent an otherwise attractive plan?
+
+An opportunity is a candidate for evaluation—not an instruction to move money.
+
+## 19. Run experiments and learn safely
+
+The Reality Engineering Lab is designed to support:
+
+- Deterministic simulation.
+- Replay of immutable recorded facts.
+- Counterfactual comparison.
+- Fault injection and robustness testing.
+- Search over strategies and Organizations.
+- Search over real connected capability instances and observations.
+- Replaceable search plugins.
+- Comparison against provider-native baselines.
+- Shadow and canary evaluation.
+- Evidence-backed, reversible promotion.
+- Rollback with an append-only history.
+- A Director control surface for managing the proposed intelligence and execution strategy.
+
+The Lab should be able to help determine whether a route, strategy, provider choice, organization or intervention appears better under specified conditions.
+
+Its results remain advisory. A simulation cannot become production financial authority simply because it scored well or won an optimization comparison.
+
+Source: [Reality Engineering Lab](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/lab/LAB.md?utm_source=chatgpt.com).
+
+# Part VII — Developer and platform experiences
+
+## 20. Let developers add capabilities to PaySwap
+
+A developer should be able to work with PaySwap at several levels:
+
+- Consume framework-independent PaySwap Surface contracts.
+- Integrate through supported SDK/API surfaces.
+- Define new capability types.
+- Implement provider-specific adapters for existing capability definitions.
+- Declare prerequisites, scopes, execution semantics and state machines.
+- Define idempotency, retry, cancellation, compensation and partial-execution behavior.
+- Supply provider-state mappings and evidence requirements.
+- Declare pricing terms and geographic/jurisdiction restrictions.
+- Connect an implementation to a real account or provider instance.
+- Produce observations and certification evidence.
+- Extend the capability registry without building a parallel financial protocol.
+
+New providers should fit the common capability hierarchy:
+
+`CapabilityDefinition → ProviderImplementation → ConnectedCapabilityInstance → CapabilityObservation`
+
+A catalogue entry only says what might be possible. It does not mean a provider is actually connected, authorized or eligible.
+
+## 21. Operate PaySwap from multiple surfaces
+
+The frozen architecture is not desktop-only. It calls for shared, framework-independent surface contracts consumed by:
+
+- Web.
+- Desktop.
+- Mobile.
+- Browser extension.
+- SDK/API clients.
+- Embedded checkout.
+- External-agent surfaces.
+
+The goal is for the same economic task, authority rules, protocol state and evidence model to survive across clients. Switching surfaces should not create an alternative financial truth or an authorization loophole.
+
+The detailed look and interaction patterns can differ by device. The financial behavior cannot.
+
+Source: [Architecture Lock](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/PAYSWAP-3.0.md?utm_source=chatgpt.com).
+
+# Part VIII — Security and governance that every UX must include
+
+These are not optional screens at the edge of the product. They are requirements that influence every economic journey.
+
+## 22. Make authority, scope and risk understandable
+
+PaySwap should be able to explain:
+
+- Who is requesting an action.
+- Which user, agent or service principal is acting.
+- Which mandate or approval permits it.
+- Which amount, resource, rail, country and beneficiary are in scope.
+- Which limits and policy configuration apply.
+- Whether that authorization is current or stale.
+- Whether the action requires further confirmation.
+- Whether a risk or security block prevents it.
+- What evidence supports the decision.
+
+The trust model includes signed, immutable approval artifacts with scope and epoch information. Child delegation must strictly narrow, never expand, its parent's authority.
+
+## 23. Handle credentials and security-sensitive operations safely
+
+The application must ensure that:
+
+- Private keys and seed phrases do not enter model context.
+- API secrets, OAuth secrets, passwords and MFA material are kept out of ordinary chat, logs and artifacts.
+- Provider catalogue entries never imply account-level authorization.
+- A connected wallet does not imply authority to sign every transaction.
+- Stale authorizations are not silently reused.
+- Hard `BLOCK` decisions cannot be downgraded by adversarial intelligence.
+- Test, sandbox, live and mainnet modes are explicit and enforced.
+- Sensitive operations are rechecked immediately before execution.
+- UI and agent messages cannot independently declare financial truth.
+
+## 24. Give users truthful progress and recovery
+
+Every operation should have a comprehensible lifecycle and a truthful state.
+
+Users should be able to see whether an action is:
+
+- A proposed goal.
+- A draft intent.
+- Waiting for missing information.
+- Blocked by eligibility, policy or authorization.
+- Ready for review.
+- Waiting for explicit approval.
+- Authorized.
+- Submitted to a provider.
+- Processing asynchronously.
+- Awaiting external confirmation.
+- Confirmed and reconciled.
+- Failed based on authoritative evidence.
+- Unknown and awaiting reconciliation.
+- Reversed, refunded or otherwise compensated where applicable.
+
+The exact states depend on the capability and rail. A UI should not compress materially different states into one generic green “Success” label.
+
+The architecture's invariants are recorded in the [Invariants](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/INVARIANTS.md?utm_source=chatgpt.com) and [Acceptance Gates](https://github.com/payswapdotorg/PaySwap-3.0/blob/main/spec/architecture/ACCEPTANCE-GATES.md?utm_source=chatgpt.com).
+
+# What this means for the complete PaySwap product
+
+The frozen architecture can be summarized as the following end-to-end experience:
+
+1\. Express the goal
+
+A person, merchant, agent or external app states the economic outcome.
+
+2\. Compile and find possible ways to fulfill it
+
+Typed intents, capability discovery, route candidates and a versioned Economic Execution Graph.
+
+3\. Determine eligibility and authority
+
+Policy, security, mandates, limits, freshness and required human approvals.
+
+4\. Execute through connected capabilities
+
+A supported bank, PSP, mobile-money rail, blockchain or composed multi-provider route.
+
+5\. Observe, settle and reconcile
+
+Provider evidence, finality, obligations, history, recourse and audit.
+
+6\. Learn and improve
+
+Lab replay, counterfactuals, robustness testing, candidate strategies and controlled promotion.
