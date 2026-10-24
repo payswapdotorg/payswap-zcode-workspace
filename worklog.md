@@ -343,3 +343,19 @@ Work Log:
 
 Stage Summary:
 - The ported browser chrome now has ZERO dead controls: element picker included, driven by the verbatim original script over a real CDP session. Picked elements flow into the chat composer as removable chips and reach the agent as the original "# Web page elements:" context block. All previous flows re-verified (browser-buy golden path settled psbx_91znjsey). GitHub push remains prepared via PUSH_TO_GITHUB.md (needs the user's token).
+
+---
+Task ID: 13 (environment reset recovery)
+Agent: Z.ai Code (main)
+Task: User said "go". On resume, the sandbox had been reset: /home/z/my-project was back to a fresh scaffold (no paydesk components, no mini-services, no worklog) and /home/z/zcode-copy was gone. Recover the full PaySwap app and re-verify.
+
+Work Log:
+- Confirmed the reset: /home/z/my-project contained only the default scaffold (Z.ai logo page.tsx, User/Post prisma schema, initial git commit d5e71fe); no worklog.md, no PUSH_TO_GITHUB.md, no paydesk/, no mini-services/.
+- Located the surviving copy at /tmp/my-project (full source, 81KB worklog through Task 12, LICENSE/NOTICE.md/PUSH_TO_GITHUB.md, db/custom.db, both mini-services). Chromium cache survived at /home/z/.cache/ms-playwright/chromium-1200 (matches browser-service hardcoded path).
+- Stopped dev server; rsynced /tmp/my-project -> /home/z/my-project excluding node_modules/.next/.git/.env (kept fresh .env with DATABASE_URL=file:/home/z/my-project/db/custom.db and existing git). Only harmless chgrp errors on the root-owned upload/ mount.
+- bun install at root (added @xterm/xterm, @xterm/addon-fit, @xterm/addon-clipboard, socket.io-client) and in both mini-services (socket.io, playwright-core).
+- Restarted all three services: Next dev :3000 (Ready in 714ms), browser-service :3010 (listening, chromium path OK), terminal-service :3005 (listening).
+- Committed the recovered work to git (067fa58) so future resets preserve it.
+
+Stage Summary:
+- PaySwap app fully recovered with zero data loss; git history now contains the full app (067fa58 on top of d5e71fe). All three services run. Proceeding to agent-browser re-verification.
