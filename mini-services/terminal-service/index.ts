@@ -27,7 +27,7 @@ interface TermSession {
 
 const sessions = new Map<string, TermSession>()
 
-const WORKSPACE_ROOT = '/home/z/my-project'
+const WORKSPACE_ROOT = process.env.WORKSPACE_ROOT || '/home/z/my-project'
 mkdirSync(WORKSPACE_ROOT, { recursive: true })
 
 function killSession(session: TermSession | undefined) {

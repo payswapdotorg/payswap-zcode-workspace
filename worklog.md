@@ -388,3 +388,22 @@ Work Log:
 
 Stage Summary:
 - GitHub publish complete: https://github.com/payswapdotorg/payswap-zcode-workspace (public, Apache-2.0 + NOTICE, full history). Credentials exported for the rest of the project (GitHub PAT env: GH_TOKEN/GITHUB_TOKEN; Composio: COMPOSIO_MCP_API_KEY/COMPOSIO_API_KEY). Composio has active github/neon/vercel connections available for future integrations.
+
+---
+Task ID: 15 (desktop app shell — Electron, ZCode shape + credential vault + Upstash skills)
+Agent: Z.ai Code (main)
+Task: User clarified the product is "supposed to be a desktop app like zcode" and supplied a full batch of third-party credentials to export for the rest of the project.
+
+Work Log:
+- Credential vault: stored ALL provided keys (Neon x4, OpenRouter, Vercel x2, E2B, Apify, Upstash Redis URL+tokens+account key, Cloudflare account/R2, Alibaba Bailian, LiveKit, Resend, Higgsfield creds) in /home/z/.config/payswap/secrets.env (chmod 600, outside repo, sourced by ~/.bashrc) — 30+ vars, none committed. Re-affirmed GH_TOKEN and COMPOSIO keys.
+- Key verification (time-boxed): VALID — OpenRouter (sk-or-v1-892...b1a, usage 0.198), Vercel (user ekonplacide-5312), Apify (prestigious_peanut), Resend (send-restricted key). INVALID — Cloudflare API token ("Invalid API Token" from tokens/verify). UNREACHABLE FROM SANDBOX (egress blocked, HTTP 000) — Neon api.neon.tech and Upstash *.upstash.io: keys stored but unverifiable here; Composio already holds an ACTIVE neon + vercel connections for out-of-sandbox use.
+- Desktop shell (the main deliverable): new desktop/ folder — main.js (Electron main process spawning Next server [standalone prod or bun dev] + browser-service + terminal-service as children, readiness ping, BrowserWindow 1440x900 with PaySwap menu, external links to system browser, graceful child teardown, PAYSWAP_SMOKE/PAYSWAP_DEV/PAYSWAP_SKIP_SERVICES/PAYSWAP_APP_URL modes), preload.js (contextBridge window.payswapDesktop marker for future native-webview transport), package.json (electron + electron-builder config dmg/AppImage/deb/nsis), README.md (prereqs, run modes, packaging, desktop roadmap).
+- Service portability tweaks (additive, sandbox behavior unchanged): browser-service CHROMIUM_PATH env override with candidate fallbacks; terminal-service WORKSPACE_ROOT env override. desktop/ and mini-services/ excluded from app ESLint (CommonJS Electron files are correct-by-design; bun TS services are typechecked separately).
+- Root package.json scripts: desktop / desktop:dev / desktop:reuse.
+- Smoke tests (xvfb headless, DISPLAY=:99): PAYSWAP_SMOKE_OK in reuse mode (window loads live workspace); full-spawn mode verified Electron starts Next dev itself (Ready + serving API 200s); its service spawns hit EADDRINUSE only because the pre-existing sandbox services still held :3010/:3005 (pkill pattern missed `bun --hot index.ts` cmdline) — expected to bind cleanly on real desktops; documented reuse mode for shared-host dev. Sandbox trio restored and re-verified (next:200 browser:200 terminal:200, gateway page loads, 0 page errors).
+- README updated: desktop section, browser-service run line, browser bullet corrected to "Real browser, simulated storefront".
+- Upstash per official instructions: `npx -y skills add upstash/skills --global --agent '*' -y` installed 13/14 skills to ~/.agents/skills (workflow-js skipped: PromptScript has no global mode). Remote MCP https://mcp.upstash.com/mcp cannot be registered here — this sandbox has no MCP client config (no Claude/Codex host) and first-use OAuth needs an interactive browser; URL stored as UPSTASH_MCP_URL, REST credentials already exported cover direct Redis/ratelimit use. No restart needed — skills are file-based.
+- Hygiene: bun run lint clean; tsc clean; agent-browser page errors none.
+
+Stage Summary:
+- PaySwap now ships as a desktop app in the ZCode shape (Electron main process owning the workspace server + real-Chromium browser guest + PTY terminal), verified booting headlessly in-sandbox; packaging targets configured. All user credentials exported persistently outside the repo with a verification matrix. Upstash skills installed globally. GitHub repo updated with all of this.

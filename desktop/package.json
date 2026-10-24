@@ -1,0 +1,29 @@
+{
+  "name": "payswap-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PaySwap desktop shell — Electron main process hosting the workspace UI, real-Chromium browser guest service, and PTY terminal service (ZCode desktop shape).",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:dev": "PAYSWAP_DEV=1 electron .",
+    "start:reuse": "PAYSWAP_SKIP_SERVICES=1 electron .",
+    "smoke": "PAYSWAP_SMOKE=1 PAYSWAP_SKIP_SERVICES=1 electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "org.payswap.workspace",
+    "productName": "PaySwap",
+    "asar": true,
+    "files": ["main.js", "preload.js", "package.json"],
+    "directories": { "output": "dist" },
+    "mac": { "category": "public.app-category.finance", "target": ["dmg", "zip"] },
+    "linux": { "target": ["AppImage", "deb"], "category": "Office" },
+    "win": { "target": ["nsis"] },
+    "extraMetadata": { "name": "payswap-desktop" }
+  }
+}

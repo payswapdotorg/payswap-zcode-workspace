@@ -18,9 +18,11 @@ opens merchant checkouts and swaps payment rails when they do not fit.
   execute as the original ZCode-style todo list, ticking off steps live.
   Third parties can publish routines (pending review) and both users and the
   agent rate them.
-- **Simulated browser** — browse a sandbox storefront, add to cart, reach
-  checkout, then say **"buy this"** to hand the goal to the agent; the agent
-  drives the same browser and the merchant rails become payable in place.
+- **Real browser, simulated storefront** — the browser pane is a **real Chromium guest**
+  (CDP pixel stream + input dispatch, mirroring the original ZCode webview contract) with
+  the original chrome: address bar, back/forward history, reload, element picker. It can
+  browse the live web; the sandbox storefront (jumia checkout, Pay with MoMo, receipts)
+  is simulated.
 - **Opportunities board** — payments with no fitting local rail are broadcast
   as opportunities to PaySwap nodes; nodes bid (fee bps, ETA, rating) and the
   best route wins.
@@ -48,11 +50,27 @@ conversational agent is a **real LLM runtime**. Nothing here moves real money.
 bun install
 bun run db:push          # SQLite schema
 bun run dev              # Next.js on :3000
+(cd mini-services/browser-service && bun install && bun run dev)  # browser guest on :3010
 (cd mini-services/terminal-service && bun install && bun run dev)  # terminal on :3005
 ```
 
-Behind the Caddy gateway (`:81`), the terminal service is reachable through the
-same origin via `?XTransformPort=3005`.
+Behind the Caddy gateway (`:81`), both services are reachable through the same
+origin via `?XTransformPort=3010` and `?XTransformPort=3005`.
+
+## Desktop app (Electron, ZCode shape)
+
+The product form factor is a **desktop app like ZCode**: an Electron main
+process spawns the workspace server and both guest services, then opens the
+workspace in a native window.
+
+```bash
+bun run build                                  # production UI (standalone)
+cd desktop && npm install && npm start         # window + server + browser + terminal
+```
+
+See [desktop/README.md](desktop/README.md) for modes (`PAYSWAP_DEV`,
+`PAYSWAP_SKIP_SERVICES`, `PAYSWAP_APP_URL`, smoke testing) and the
+`electron-builder` packaging targets (dmg / AppImage / deb / nsis).
 
 ## Source layout
 
@@ -62,7 +80,9 @@ src/components/paydesk/             # views (home/new-task, task, routines, oppo
 src/lib/agent-types.ts              # task/routine/gate/opportunity contracts
 src/lib/zcode/terminal/             # verbatim ZCode terminal theme + links
 src/server/                         # agent runtime, routine matching, payments, opportunities
+mini-services/browser-service/      # real-Chromium guest over socket.io (CDP screencast + input)
 mini-services/terminal-service/     # socket.io bash session service (PTY via script(1))
+desktop/                            # Electron shell (main process, preload, packaging config)
 prisma/schema.prisma                # tasks, messages, routines, opportunities, ledger, approvals
 ```
 

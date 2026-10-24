@@ -15,11 +15,22 @@
  * browserViewAttachGuest contract and can be layered on later through the same session.
  */
 import { chromium, type Browser, type BrowserContext, type CDPSession, type Page } from 'playwright-core'
+import { existsSync } from 'node:fs'
 import { Server } from 'socket.io'
 
 const PORT = 3010
-const CHROMIUM_PATH =
-  '/home/z/.cache/ms-playwright/chromium-1200/chrome-linux64/chrome'
+/** Desktop override: CHROMIUM_PATH env -> playwright registry default -> bundled chromium guess. */
+function resolveChromiumPath(): string {
+  const candidates = [
+    process.env.CHROMIUM_PATH,
+    '/home/z/.cache/ms-playwright/chromium-1200/chrome-linux64/chrome',
+    `${process.env.HOME ?? ''}/.cache/ms-playwright/chromium-1200/chrome-linux64/chrome`,
+    `${process.env.LOCALAPPDATA ?? ''}/ms-playwright/chromium-1200/chrome-win/chrome.exe`,
+  ].filter(Boolean) as string[]
+  for (const c of candidates) if (existsSync(c)) return c
+  return candidates[0]
+}
+const CHROMIUM_PATH = resolveChromiumPath()
 const FRAME_QUALITY = 60
 const MAX_FRAME_EDGE = 2048
 
