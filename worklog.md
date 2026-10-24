@@ -359,3 +359,16 @@ Work Log:
 
 Stage Summary:
 - PaySwap app fully recovered with zero data loss; git history now contains the full app (067fa58 on top of d5e71fe). All three services run. Proceeding to agent-browser re-verification.
+
+Work Log (continued — verification):
+- Agent-browser re-verification, first pass at origin localhost:3000: page renders, task create returned 500 — root cause: stale Prisma client generated for the scaffold schema (User/Post), so db.approval/db.opportunity were undefined. Fix: bun run db:generate + dev server restart; all API routes 200 against the recovered PaySwap models (Routine/AppSetting queries confirmed in dev.log).
+- Full browser-buy golden path re-verified at :3000 origin: jumia chip -> routine picker -> Browser checkout purchase -> agent drove store -> product -> cart -> checkout GHS 249.00; "buy this" chip -> second task -> routine picker -> Let the agent decide -> dual gate (chat "Payment gate for Jumia" region + browser checkout methods) -> Pay with MTN MoMo -> Payment settled psbx_gp8j323m (MTN MoMo, GHS 37.35 fee - 150bps, Amount GHS 249.00, Filed to Activity with full evidence), receipt in browser page + chat gate card + toast, todos 7/7.
+- IMPORTANT finding: mini-services are only reachable through the Caddy gateway (:81) which maps XTransformPort; opening the app at localhost:3000 directly makes io('/?XTransformPort=3005|3010') hit Next.js instead (308) — internal psbx:// store pages are host DOM so the browser pane still looked alive, masking the disconnect until the terminal showed "Terminal service unreachable". Re-verified everything through the gateway origin http://localhost:81/:
+  - Settled task reopened with full persistence (todos ticked, receipt card psbx_gp8j323m).
+  - New task via gateway: routine loaded, agent 5/7 mid-run; address bar navigation to https://example.com rendered the real Chromium pixel stream through the gateway (browser-service :3010 OK).
+  - Terminal: real PTY bash (z@c-...:~/my-project$), echo GATEWAY_RECOVERY_OK executed (documented stty/script(1) duplicate echo trade-off) — terminal-service :3005 OK.
+- Hygiene: agent-browser page errors: none; bun run lint clean; tsc clean for src; dev.log has no runtime errors post-prisma-regen.
+- Committed recovery (067fa58) + verification state (071b932) so future environment resets preserve the full app.
+
+Stage Summary:
+- Environment reset fully recovered with zero data loss. All three services healthy: Next dev :3000, browser-service :3010, terminal-service :3005; user-facing origin is the gateway (:81) where XTransformPort routing works. Golden path settles (psbx_gp8j323m), real browser guest + real terminal verified through the gateway. GitHub push still blocked only on the user's token (PUSH_TO_GITHUB.md ready).
