@@ -2,9 +2,10 @@
   "name": "browser-service",
   "version": "1.0.0",
   "private": true,
-  "description": "PaySwap browser guest service — real Chromium guest pages over socket.io (CDP screencast + input dispatch), mirroring the Electron <webview> surface of the original ZCode browser.",
+  "description": "PaySwap browser guest service \u2014 real Chromium guest pages over socket.io (CDP screencast + input dispatch), mirroring the Electron <webview> surface of the original ZCode browser.",
   "scripts": {
-    "dev": "bun --hot index.ts"
+    "dev": "bun --hot index.ts",
+    "build": "bun build --compile \"--external\", \"electron\", \"--external\", \"chromium-bidi\", --outfile ../../desktop/bin/payswap-browser-service index.ts"
   },
   "dependencies": {
     "playwright-core": "1.57.0",

@@ -2,9 +2,10 @@
   "name": "terminal-service",
   "version": "1.0.0",
   "private": true,
-  "description": "PaySwap workspace terminal service — persistent bash sessions over socket.io (PTY via util-linux script(1)).",
+  "description": "PaySwap workspace terminal service \u2014 persistent bash sessions over socket.io (PTY via util-linux script(1)).",
   "scripts": {
-    "dev": "bun --hot index.ts"
+    "dev": "bun --hot index.ts",
+    "build": "bun build --compile --outfile ../../desktop/bin/payswap-terminal-service index.ts"
   },
   "dependencies": {
     "socket.io": "^4.8.0"

@@ -15,7 +15,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { Server } from 'socket.io'
 
-const PORT = 3005
+const PORT = Number(process.env.PORT) || 3005
 const MAX_REPLAY_BYTES = 512 * 1024
 
 interface TermSession {

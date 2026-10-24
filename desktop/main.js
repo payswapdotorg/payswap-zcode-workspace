@@ -55,16 +55,29 @@ function startServices() {
     log('PAYSWAP_SKIP_SERVICES=1 — reusing already-running processes')
     return
   }
-  // Browser guest service (real Chromium over socket.io, mirrors ZCode webview contract)
-  spawnChild('browser', bunBin(), ['index.ts'], {
-    cwd: path.join(APP_ROOT, 'mini-services', 'browser-service'),
-    env: { CHROMIUM_PATH: process.env.CHROMIUM_PATH || '' },
-  })
-  // Terminal service (real PTY bash over socket.io)
-  spawnChild('terminal', bunBin(), ['index.ts'], {
-    cwd: path.join(APP_ROOT, 'mini-services', 'terminal-service'),
-    env: { WORKSPACE_ROOT: APP_ROOT },
-  })
+  // Guest services: prefer the compiled single-file binaries (bun build --compile,
+  // see mini-services/*/package.json build scripts), fall back to the bun runtime.
+  const fsBin = path.join(APP_ROOT, 'desktop', 'bin', 'payswap-browser-service')
+  const termBin = path.join(APP_ROOT, 'desktop', 'bin', 'payswap-terminal-service')
+  const useBinaries = process.env.PAYSWAP_FORCE_BUN !== '1' && fs.existsSync(fsBin) && fs.existsSync(termBin)
+  if (useBinaries) {
+    log('using compiled service binaries from desktop/bin')
+    spawnChild('browser', fsBin, [], {
+      env: { CHROMIUM_PATH: process.env.CHROMIUM_PATH || '' },
+    })
+    spawnChild('terminal', termBin, [], {
+      env: { WORKSPACE_ROOT: APP_ROOT },
+    })
+  } else {
+    spawnChild('browser', bunBin(), ['index.ts'], {
+      cwd: path.join(APP_ROOT, 'mini-services', 'browser-service'),
+      env: { CHROMIUM_PATH: process.env.CHROMIUM_PATH || '' },
+    })
+    spawnChild('terminal', bunBin(), ['index.ts'], {
+      cwd: path.join(APP_ROOT, 'mini-services', 'terminal-service'),
+      env: { WORKSPACE_ROOT: APP_ROOT },
+    })
+  }
   // Workspace UI server
   const standalone = path.join(APP_ROOT, '.next', 'standalone', 'server.js')
   if (DEV || !fs.existsSync(standalone)) {

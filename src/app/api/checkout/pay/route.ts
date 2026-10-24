@@ -3,6 +3,8 @@ import { db } from '@/lib/db'
 import type { Opportunity, PaymentChoice, PaymentGate, PaymentReceipt } from '@/lib/agent-types'
 import { readSettings } from '@/server/finance'
 import { fillBidsAndAward } from '@/server/opportunities'
+import { rateGuard } from '@/lib/rate-limit'
+import { sendReceiptEmail } from '@/server/email'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -45,6 +47,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  *    immediate bids and an award of the lowest fee.
  */
 export async function POST(request: Request) {
+  const limited = await rateGuard(request, 'checkout:pay', { limit: 20, windowMs: 60_000 })
+  if (limited) return limited
   const body = (await request.json()) as {
     amount?: number
     currency?: string
@@ -221,6 +225,16 @@ export async function POST(request: Request) {
 
   gates[idx] = { ...gates[idx], status: 'settled', receipt, opportunityId: opportunity?.id }
   await persistGates(taskId, gates)
+
+  // Receipt email — fire-and-forget, never blocks or fails settlement.
+  void sendReceiptEmail({
+    ref: receipt.ref,
+    rail: railLabel,
+    amount: receipt.amount,
+    currency: receipt.currency,
+    fee,
+    merchant: checkout.store,
+  }).catch(() => {})
 
   return NextResponse.json(opportunity ? { receipt, opportunity } : { receipt })
 }

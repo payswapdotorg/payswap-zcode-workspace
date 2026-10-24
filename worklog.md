@@ -407,3 +407,20 @@ Work Log:
 
 Stage Summary:
 - PaySwap now ships as a desktop app in the ZCode shape (Electron main process owning the workspace server + real-Chromium browser guest + PTY terminal), verified booting headlessly in-sandbox; packaging targets configured. All user credentials exported persistently outside the repo with a verification matrix. Upstash skills installed globally. GitHub repo updated with all of this.
+
+---
+Task ID: 16 (desktop packaging milestone + Upstash rate limiting + Resend receipts)
+Agent: Z.ai Code (main)
+Task: "go" — advance the desktop direction and put the user-provided infra credentials to work.
+
+Work Log:
+- Service binaries: added PORT env override to browser-service (:3010 default) and terminal-service (:3005 default); compiled both with bun build --compile into desktop/bin/payswap-{browser,terminal}-service (97MB/94MB). Browser-service needed --external electron --external chromium-bidi (playwright-core conditional imports). Verified live: binaries boot on :4010/:4005 with socket.io handshakes and correct chromium detection; build scripts added to both mini-service package.jsons; desktop/bin/ gitignored.
+- desktop/main.js now prefers the compiled binaries when present (PAYSWAP_FORCE_BUN=1 escape hatch), falling back to the bun runtime — the packaged app no longer needs bun at runtime for the guest services.
+- Upstash distributed rate limiting: new src/lib/rate-limit.ts — fixed-window limiter over Upstash REST pipeline (INCR+PEXPIRE) with (1) in-process memory fallback when env is missing and (2) a 60s circuit breaker after REST failures so sandbox egress blocks never add latency. Wired via rateGuard() into POST /api/tasks (30/min/IP) and POST /api/checkout/pay (20/min/IP); standard 429 + Retry-After/X-RateLimit headers. LIVE-VERIFIED the memory path: 30x 200 then 429 on the 31st rapid task-create.
+- Resend receipt emails: new src/server/email.ts — sendReceiptEmail() with styled receipt HTML (ref/rail/amount/fee/merchant), recipient from PAYSWAP_RECEIPT_EMAIL or settings receiptEmail, strictly fire-and-forget (not-configured/no-recipient/api-error are log-only). Hooked into the checkout gate settle path after gate persistence. LIVE-VERIFIED twice: a direct API test send (id 01a17032...) and a real golden-path settle sending receipt psbx_s07r8lo6 to ekontetevi@gmail.com (id 01a17037-d03e-755a-88a5-9992142af8a6, visible in dev.log).
+- Incident: Turbopack panic "Failed to restore task data" after the desktop smoke tests had killed dev servers mid-compile — corrupted incremental cache; fixed by rm -rf .next + clean restart (server healthy again, 200 in 1.4s).
+- Regression: full browser-buy golden path re-run with integrations live: jumia chip -> routine -> agent to checkout GHS 249 -> buy this -> agent decide -> dual gate -> MoMo pay -> settled psbx_s07r81o6 (GHS 37.35 - 150bps) with receipt in browser + chat, todos ticked, receipt email actually sent during the flow. Probe tasks from the rate-limit test deleted from the workspace (31 rows incl. messages/ledger).
+- Hygiene: tsc clean for src; bun run lint clean; terminal/browser services healthy (200) after restart.
+
+Stage Summary:
+- Desktop app packaging advanced to compiled single-binary services (runtime no longer needs bun). Upstash-backed distributed rate limiting (with graceful memory fallback) and Resend receipt emails are live product features, both verified end-to-end in the sandbox. Golden path regression passed with the new integrations in the loop.

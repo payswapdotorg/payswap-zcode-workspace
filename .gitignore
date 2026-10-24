@@ -58,3 +58,6 @@ db/*.db
 dev.log
 tool-results/
 mini-services/*/terminal-service.log
+
+# compiled desktop service binaries (bun build --compile output)
+desktop/bin/

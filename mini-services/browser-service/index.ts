@@ -18,7 +18,7 @@ import { chromium, type Browser, type BrowserContext, type CDPSession, type Page
 import { existsSync } from 'node:fs'
 import { Server } from 'socket.io'
 
-const PORT = 3010
+const PORT = Number(process.env.PORT) || 3010
 /** Desktop override: CHROMIUM_PATH env -> playwright registry default -> bundled chromium guess. */
 function resolveChromiumPath(): string {
   const candidates = [

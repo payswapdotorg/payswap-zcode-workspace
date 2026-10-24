@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import type { AgentStep, PaymentGate, RoutineRunState, TaskDTO, TaskOrigin } from '@/lib/agent-types'
+import { rateGuard } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -163,6 +164,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateGuard(request, 'tasks:create', { limit: 30, windowMs: 60_000 })
+  if (limited) return limited
   const body = (await request.json()) as {
     title?: string
     projectId?: string | null
